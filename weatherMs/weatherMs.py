@@ -19,11 +19,11 @@ class weatherMs:
     def __init__(self, bot):
         self.bot = bot
         self.settings = fileIO("data/weather/settings.json", "load")
-                
+
     @commands.command(no_pm=True, pass_context=False)
     async def temp(self, *, weather_station):
         """Make sure to get your own API key and put it into data/weather/settings.json
-        \nYou can get an API key from: www.wunderground.com/weather/api/"""        
+        \nYou can get an API key from: www.wunderground.com/weather/api/"""
         target = weather_station.split(".")
         #print(target)
         #print(len(target))
@@ -35,7 +35,7 @@ class weatherMs:
             #print(country, location)
         if len(target) == 1:
             location = target[0].replace(" ", "_")
-            #print(country, location)            
+            #print(country, location)
         elif country  == None or location == None:
             await self.bot.say("`Please use a US zip code or format like: NY.new york, fr.paris\nIf the default country is set to your requesting location just '!temp city' will do.\nThe the default country is set to: {} `".format(self.settings["defCountry"]))
             return
@@ -52,11 +52,15 @@ class weatherMs:
             tempC = data["current_observation"].get("temp_c", " ")
             tempF = data["current_observation"].get("temp_f", " ")
             tempH = data["current_observation"].get("relative_humidity", " ")
+            tempWS = data["current_observation"].get("wind_mph", " ")
+            tempWD = data["current_observation"].get("wind_dir", " ")
+
+
             if tempCO != False:
-                if self.settings["unit"] == "C": 
+                if self.settings["unit"] == "C":
                     await self.bot.say("**Weather **{} **Temp.** {}{} **Hum. **{} ".format(tempW, str(tempC), u"\u2103", tempH))
-                elif self.settings["unit"] == "F":    
-                    await self.bot.say("**Weather **{} **Temp.** {}F **Hum. **{} ".format(tempW, str(tempF), tempH))
+                elif self.settings["unit"] == "F":
+                    await self.bot.say("**Weather **{} **Wind **{}mph {} **Temp.** {}F **Hum. **{} ".format(tempW, tempWS, tempWD, str(tempF), tempH))
             else:
                 await self.bot.say("No temperature found")
         else:
@@ -67,29 +71,29 @@ class weatherMs:
     async def toggleunit(self, ctx):
         """Switches the default unit: Celcius/Farherheit.
         Admin/owner restricted."""
-        user= ctx.message.author        
+        user= ctx.message.author
         if self.settings["unit"] == "C":
             self.settings["unit"] = "F"
             allowBot = "Farhenheit"
         elif self.settings["unit"] == "F":
             self.settings["unit"] = "C"
             allowBot = "Celcius"
-        await self.bot.say("{} ` The default unit is now: {}.`".format(user.mention, allowBot))       
+        await self.bot.say("{} ` The default unit is now: {}.`".format(user.mention, allowBot))
         fileIO(SETTINGS, "save", self.settings)
-        
+
     @commands.command(pass_context=True, no_pm=False)
     @checks.admin_or_permissions(manage_server=True)
     async def setcountry(self, ctx, country):
         """Sets the default country/zip code.
         Admin/owner restricted."""
-        user= ctx.message.author        
+        user= ctx.message.author
         if country is None:
-            await self.bot.say("{} ` tell me: {}.`".format(user.mention, country))    
+            await self.bot.say("{} ` tell me: {}.`".format(user.mention, country))
         else:
             self.settings["defCountry"] = country
-            await self.bot.say("{} ` The default country is now: {}.`".format(user.mention, country))       
-        fileIO(SETTINGS, "save", self.settings)        
-            
+            await self.bot.say("{} ` The default country is now: {}.`".format(user.mention, country))
+        fileIO(SETTINGS, "save", self.settings)
+
 def check_folders():
     if not os.path.exists("data/weather"):
         print("Creating data/weather folder...")
@@ -97,7 +101,7 @@ def check_folders():
 
 def check_files():
     settings = {"api_key": "Get your API key from: www.wunderground.com/weather/api/", "unit": "C", "defCountry": "uk" }
-    
+
     if not fileIO(SETTINGS, "check"):
         print("Creating settings.json")
         print("You must obtain an API key as noted in the newly created 'settings.json' file")
